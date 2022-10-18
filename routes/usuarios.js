@@ -3,7 +3,13 @@ const { check } = require('express-validator');
 
 const { usuariosGet, usuariosPost, usuariosPut, usuariosPatch, usuariosDelete } = require('../controllers/usuarios');
 const { esRolValido, emailExiste, existeUsuarioPorId } = require('../helpers/db-validators');
-const { validarCampos } = require('../middlewares/validar-campos');
+
+const {
+    validarCampos,
+    validarJWT,
+    esAdminRol,
+    tieneRol
+} = require('../middlewares');
 
 const router = Router();
 
@@ -49,6 +55,15 @@ router.put('/:id', [
 ], usuariosPut);
 
 router.delete('/:id', [
+    // Valida el usuario mediante el JWT
+    validarJWT,
+
+    // Verifica si es admin para poder eliminar a un usuario
+    //esAdminRol,
+
+    // Verifica si el usuario que intenta borrar a otro usuario tiene uno de los siguientes roles
+    tieneRol('ADMIN_ROLE', 'VENTAS_ROLE'),
+
     // Verifica si el ID es valido, tiene que se un ID valido de Mongo
     check('id', 'No es un ID valido').isMongoId(),
 
